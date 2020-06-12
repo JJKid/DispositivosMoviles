@@ -5,6 +5,7 @@ import android.app.Activity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -21,7 +22,12 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
+import com.android.volley.toolbox.StringRequest;
 import com.example.login.R;
 import com.example.login.ui.login.LoginViewModel;
 import com.example.login.ui.login.LoginViewModelFactory;
@@ -29,6 +35,9 @@ import com.example.login.ui.login.LoginViewModelFactory;
 public class LoginActivity extends AppCompatActivity {
 
     private LoginViewModel loginViewModel;
+
+    RequestQueue queue;
+    String url = "https://www.lamarr.com.mx/webservice2.php?";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -109,12 +118,32 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        queue = Volley.newRequestQueue(this);
+        queue.start();
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
+                //loadingProgressBar.setVisibility(View.VISIBLE);
+                url += "email=" + usernameEditText.getText().toString() + "&password=" + passwordEditText.getText().toString();
+                StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                        new Response.Listener<String>(){
+                            @Override
+                            public void onResponse(String response){
+                                Context context = getApplicationContext();
+                                Toast toast = Toast.makeText(context, response, Toast.LENGTH_SHORT);
+                                toast.show();
+                            }
+                        },
+                        new Response.ErrorListener(){
+                            @Override
+                            public void onErrorResponse(VolleyError error){
+                                Context context = getApplicationContext();
+                                Toast toast = Toast.makeText(context, error.toString(), Toast.LENGTH_SHORT);
+                                toast.show();
+                            }
+                        }
+                );
+                queue.add(stringRequest);
             }
         });
     }
